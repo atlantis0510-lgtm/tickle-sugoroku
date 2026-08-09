@@ -6,7 +6,6 @@
 <title>くすぐりすごろく</title>
 <style>
   :root {
-    /* 2. 全体的に淡いピンク系のカラーテーマに変更 */
     --primary-color: #ffa6c0; /* 淡いピンク */
     --secondary-color: #ffc2d4;
     --bg-color: #fff5f7;
@@ -39,7 +38,38 @@
     padding-bottom: 10px;
   }
 
-  /* 7. ルール表示エリア */
+  /* タブUI */
+  .tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
+  }
+  .tab-buttons button {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .tab-buttons button.active {
+    background: var(--primary-color);
+    color: white;
+  }
+  .tab-content {
+    display: none;
+    animation: fadeIn 0.3s;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ルール表示エリア */
   .rules-box {
     background-color: var(--bg-color);
     border-left: 5px solid var(--primary-color);
@@ -49,7 +79,7 @@
     font-size: 0.95em;
   }
 
-  /* タイマーエリア */
+  /* プレイタブのスタイル */
   .timer-section {
     text-align: center;
     margin-bottom: 20px;
@@ -57,7 +87,6 @@
     background: var(--bg-color);
     border-radius: 10px;
   }
-
   .timer-display {
     font-size: 3.5em;
     font-weight: bold;
@@ -65,26 +94,22 @@
     font-variant-numeric: tabular-nums;
     margin-bottom: 10px;
   }
-
-  /* 6. タイマーコントロールボタン */
   .timer-controls button {
     background: white;
     border: 2px solid var(--primary-color);
     color: var(--primary-color);
     padding: 8px 15px;
-    font-size: 1em;
     border-radius: 20px;
     cursor: pointer;
     margin: 0 5px;
     font-weight: bold;
-    transition: 0.2s;
   }
   .timer-controls button:hover {
     background: var(--primary-color);
     color: white;
   }
 
-  /* 1. 横スクロール盤面 */
+  /* 盤面 */
   .board-container {
     margin: 20px 0;
     padding: 15px 0;
@@ -100,14 +125,6 @@
     scroll-behavior: smooth;
     align-items: center;
   }
-  .board-scroll::-webkit-scrollbar {
-    height: 10px;
-  }
-  .board-scroll::-webkit-scrollbar-thumb {
-    background: var(--secondary-color);
-    border-radius: 5px;
-  }
-  
   .space {
     flex: 0 0 auto;
     width: 100px;
@@ -122,102 +139,49 @@
     position: relative;
     transition: 0.3s;
   }
-  .space .num {
-    font-size: 0.9em;
-    color: #999;
-    position: absolute;
-    top: 5px;
-    left: 8px;
-  }
-  .space .type {
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-top: 10px;
-    text-align: center;
-  }
+  .space .num { font-size: 0.9em; color: #999; position: absolute; top: 5px; left: 8px; }
+  .space .type { font-weight: bold; font-size: 1.1em; margin-top: 10px; text-align: center; }
   .space.active {
     border-color: var(--accent-color);
     background: var(--accent-color);
     color: white;
     transform: scale(1.1);
-    box-shadow: 0 5px 15px rgba(255, 122, 160, 0.4);
   }
   .space.active .num { color: white; }
 
-  /* サイコロボタン */
+  /* ログ＆各種ボタン */
   .dice-btn {
-    display: block;
-    width: 100%;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 20px;
-    font-size: 1.5em;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: 0.2s;
-    margin-bottom: 20px;
+    width: 100%; background: var(--primary-color); color: white; border: none;
+    padding: 20px; font-size: 1.5em; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 20px;
   }
-  .dice-btn:hover {
-    background: var(--accent-color);
-    transform: translateY(-2px);
-  }
-  .dice-btn:active {
-    transform: translateY(2px);
-  }
-
-  /* ログエリア */
-  .log-area {
-    height: 200px;
-    overflow-y: auto;
-    background: #fafafa;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    font-size: 0.95em;
-  }
-  .log-item {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed #ccc;
-  }
-  .log-item:last-child {
-    border-bottom: none;
-  }
+  .log-area { height: 200px; overflow-y: auto; background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; font-size: 0.95em; }
+  .log-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #ccc; }
+  .log-item:last-child { border-bottom: none; }
 
   /* ゲームオーバー・オーバーレイ */
   .overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 245, 247, 0.95);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 245, 247, 0.95); z-index: 1000;
+    justify-content: center; align-items: center; flex-direction: column; text-align: center;
   }
-  .overlay h2 {
-    font-size: 3em;
-    color: var(--accent-color);
-    margin-bottom: 10px;
+  .overlay h2 { font-size: 3em; color: var(--accent-color); margin-bottom: 10px; }
+  .overlay p { font-size: 2em; font-weight: bold; color: var(--text-color); margin-bottom: 30px; }
+  /* 1. 閉じるボタン */
+  .overlay button {
+    background: white; border: 2px solid var(--accent-color); color: var(--accent-color);
+    padding: 10px 20px; font-size: 1.2em; border-radius: 10px; cursor: pointer; font-weight: bold;
   }
-  /* 5. 好きなだけくすぐられるのテキスト */
-  .overlay p {
-    font-size: 2em;
-    font-weight: bold;
-    color: var(--text-color);
-  }
+
+  /* テキストエリア */
+  textarea { width: 100%; height: 300px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; font-size: 14px; box-sizing: border-box; }
+  .action-btn { background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <h1>くすぐりすごろく</h1>
-
-  <!-- 7. ルール表示 -->
+  
   <div class="rules-box">
     <strong>【ルール】</strong><br>
     くすぐられる側が進めるすごろくです。止まったマスの指示に従う必要があります。<br>
@@ -225,69 +189,117 @@
     制限時間内にゴールできない、または途中でギブアップするなどした場合は罰ゲームとして、<strong>相手の気が済むまでくすぐり続けられます。</strong>
   </div>
 
-  <!-- タイマーエリア -->
-  <div class="timer-section">
-    <div class="timer-display" id="timerDisplay">60:00</div>
-    <div class="timer-controls">
-      <button onclick="startTimer()">▶ スタート</button>
-      <button onclick="stopTimer()">⏸ ストップ</button>
-      <button onclick="addTime(10)">＋10秒</button>
-      <button onclick="addTime(-10)">－10秒</button>
+  <!-- タブボタン -->
+  <div class="tab-buttons">
+    <button class="active" onclick="switchTab('tab-play', this)">🎲 プレイ</button>
+    <button onclick="switchTab('tab-sim', this)">📊 一括結果表示</button>
+    <button onclick="switchTab('tab-data', this)">⚙️ データ設定(CSV)</button>
+  </div>
+
+  <!-- タブ: プレイ -->
+  <div id="tab-play" class="tab-content active">
+    <div class="timer-section">
+      <div class="timer-display" id="timerDisplay">60:00</div>
+      <div class="timer-controls">
+        <button onclick="startTimer()">▶ スタート</button>
+        <button onclick="stopTimer()">⏸ ストップ</button>
+        <button onclick="addTime(10)">＋10秒</button>
+        <button onclick="addTime(-10)">－10秒</button>
+      </div>
+    </div>
+    <button class="dice-btn" id="diceBtn" onclick="takeTurn()">サイコロを振る</button>
+    <div class="board-container">
+      <div class="board-scroll" id="boardScroll"></div>
+    </div>
+    <div class="log-area" id="logArea">
+      <div class="log-item">ゲームスタート！サイコロを振ってください。</div>
     </div>
   </div>
 
-  <!-- サイコロボタン -->
-  <button class="dice-btn" id="diceBtn" onclick="takeTurn()">サイコロを振る</button>
-
-  <!-- 1. 盤面表示エリア -->
-  <div class="board-container">
-    <div class="board-scroll" id="boardScroll">
-      <!-- JSで盤面を生成します -->
-    </div>
+  <!-- タブ: 一括結果表示 -->
+  <div id="tab-sim" class="tab-content">
+    <p>現在の設定で、ゴール（または時間切れ）まで一気にシミュレーションを実行します。</p>
+    <button class="action-btn" onclick="runSimulation()">シミュレーション実行</button>
+    <textarea id="simOutput" readonly placeholder="ここに結果が出力されます..." style="margin-top:15px; height: 400px;"></textarea>
   </div>
 
-  <!-- ログエリア -->
-  <div class="log-area" id="logArea">
-    <div class="log-item">ゲームスタート！サイコロを振ってください。</div>
+  <!-- タブ: データ設定 (CSV) -->
+  <div id="tab-data" class="tab-content">
+    <p>カンマ区切り（マス番号, 種類）で盤面データを設定できます。</p>
+    <textarea id="csvInput"></textarea>
+    <button class="action-btn" onclick="loadCSV()">盤面データを更新する</button>
   </div>
+
 </div>
 
-<!-- ゲームオーバー画面 -->
+<!-- 1. ゲームオーバー画面（閉じるボタン追加） -->
 <div class="overlay" id="gameOverOverlay">
   <h2>制限時間オーバー<br>（ゲームオーバー）</h2>
   <p>好きなだけくすぐられる</p>
+  <button onclick="closeGameOver()">閉じてログ・盤面を確認する</button>
 </div>
 
 <script>
-  // --- ゲームステータス管理 ---
-  let timeLeft = 3600; // 1時間 = 3600秒
+  // --- システム変数 ---
+  let timeLeft = 3600;
   let timerInterval = null;
   let isRunning = false;
   let currentPosition = 0;
-  
-  // 盤面データ生成 (全40マス)
-  const boardSize = 40;
-  const board = [];
-  
-  for(let i = 0; i <= boardSize; i++) {
-    if(i === 0) board.push({ num: 0, type: 'スタート', class: 'normal' });
-    else if(i === boardSize) board.push({ num: i, type: 'ゴール', class: 'goal' });
-    else if(i === 38) board.push({ num: i, type: '∞', class: 'inf' });
-    else if(i % 7 === 0) board.push({ num: i, type: '指示5', class: 'event5' });
-    else if(i % 5 === 0) board.push({ num: i, type: '指示4', class: 'event4' });
-    else if(i % 11 === 0) board.push({ num: i, type: '指示3', class: 'event3' });
-    else if(i % 9 === 0) board.push({ num: i, type: '指示2', class: 'event2' });
-    else if(i % 4 === 0) board.push({ num: i, type: '指示1', class: 'event1' });
-    else board.push({ num: i, type: '通常', class: 'normal' });
+  let boardSize = 40;
+  let board = [];
+
+  // --- タブ切り替え ---
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-buttons button').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
   }
 
-  // --- 初期化処理 ---
+  // --- 初期化 ---
   window.onload = () => {
-    renderBoard();
+    generateDefaultCSV();
+    loadCSV();
     updateTimerDisplay();
   };
 
-  // --- タイマー処理 (6. 要望のスタート・ストップ機能) ---
+  // --- 2. CSVデータの管理 ---
+  function generateDefaultCSV() {
+    let csv = "";
+    for(let i = 0; i <= 40; i++) {
+      let type = '通常';
+      if(i === 0) type = 'スタート';
+      else if(i === 40) type = 'ゴール';
+      else if(i === 38) type = '∞';
+      else if(i % 7 === 0) type = '指示5';
+      else if(i % 5 === 0) type = '指示4';
+      else if(i % 11 === 0) type = '指示3';
+      else if(i % 9 === 0) type = '指示2';
+      else if(i % 4 === 0) type = '指示1';
+      csv += `${i},${type}\n`;
+    }
+    document.getElementById('csvInput').value = csv;
+  }
+
+  function loadCSV() {
+    const lines = document.getElementById('csvInput').value.trim().split('\n');
+    board = [];
+    lines.forEach(line => {
+      if(!line) return;
+      const parts = line.split(',');
+      if(parts.length >= 2) {
+        board.push({ num: parseInt(parts[0]), type: parts[1].trim() });
+      }
+    });
+    boardSize = board.length - 1;
+    currentPosition = 0;
+    timeLeft = 3600;
+    updateTimerDisplay();
+    renderBoard();
+    log("CSVデータを読み込み、盤面をリセットしました。");
+  }
+
+  // --- プレイ機能 ---
   function startTimer() {
     if(isRunning || timeLeft <= 0) return;
     isRunning = true;
@@ -298,184 +310,194 @@
     }, 1000);
     log("タイマーをスタートしました。");
   }
-
   function stopTimer() {
     if(!isRunning) return;
     isRunning = false;
     clearInterval(timerInterval);
     log("タイマーをストップしました。");
   }
-
   function addTime(seconds) {
     timeLeft += seconds;
     if(timeLeft < 0) timeLeft = 0;
     updateTimerDisplay();
     if(timeLeft <= 0) triggerGameOver();
   }
-
   function updateTimerDisplay() {
     if(timeLeft < 0) timeLeft = 0;
     let m = Math.floor(timeLeft / 60);
     let s = timeLeft % 60;
-    document.getElementById('timerDisplay').innerText = 
-      String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    document.getElementById('timerDisplay').innerText = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
-
   function triggerGameOver() {
     timeLeft = 0;
     updateTimerDisplay();
     stopTimer();
     document.getElementById('gameOverOverlay').style.display = 'flex';
   }
-
-  // --- 盤面描画 ---
+  function closeGameOver() {
+    document.getElementById('gameOverOverlay').style.display = 'none';
+  }
   function renderBoard() {
     const scrollContainer = document.getElementById('boardScroll');
     scrollContainer.innerHTML = '';
-    
     board.forEach((space, index) => {
       const el = document.createElement('div');
       el.className = `space ${index === currentPosition ? 'active' : ''}`;
       el.id = `space-${index}`;
-      
-      el.innerHTML = `
-        <div class="num">${space.num}</div>
-        <div class="type">${space.type}</div>
-      `;
+      el.innerHTML = `<div class="num">${space.num}</div><div class="type">${space.type}</div>`;
       scrollContainer.appendChild(el);
     });
-
-    // 1. 現在のマスが中央に来るように自動スクロール
     setTimeout(() => {
       const activeEl = document.getElementById(`space-${currentPosition}`);
-      if(activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
+      if(activeEl) activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }, 100);
   }
-
-  // --- ログ出力 ---
   function log(message) {
     const logArea = document.getElementById('logArea');
     const item = document.createElement('div');
     item.className = 'log-item';
-    
     const timeStr = document.getElementById('timerDisplay').innerText;
     item.innerHTML = `<strong>[残り ${timeStr}]</strong> ${message}`;
-    
     logArea.prepend(item);
   }
+  function rollDice1to6() { return Math.floor(Math.random() * 6) + 1; }
 
-  function rollDice1to6() {
-    return Math.floor(Math.random() * 6) + 1;
-  }
-
-  // --- ゲーム進行（サイコロを振る） ---
   function takeTurn() {
-    if(timeLeft <= 0) {
-      alert("時間切れです！");
-      return;
-    }
-    if(!isRunning) {
-      alert("タイマーが動いていません。スタートボタンを押してください！");
-      return;
-    }
+    if(timeLeft <= 0) { alert("時間切れです！"); return; }
+    if(!isRunning) { alert("タイマーが動いていません。スタートボタンを押してください！"); return; }
 
     const dice = rollDice1to6();
     log(`🎲 サイコロを振った！出目は【${dice}】`);
-    
     movePlayer(dice);
   }
 
   function movePlayer(steps) {
     currentPosition += steps;
     if(currentPosition < 0) currentPosition = 0;
-    if(currentPosition >= boardSize) currentPosition = boardSize;
-    
+    if(currentPosition > boardSize) currentPosition = boardSize;
     renderBoard();
     
-    // アニメーションを待ってからイベント処理
+    // イベント処理実行
     setTimeout(() => {
-      handleEvent(board[currentPosition]);
+      let state = { time: timeLeft, pos: currentPosition, needReEval: false };
+      let logs = handleEventLogic(board[currentPosition].type, state, false);
+      
+      logs.forEach(l => log(l));
+      timeLeft = state.time;
+      updateTimerDisplay();
+      
+      if(state.needReEval) {
+        // 戻った場合の再処理
+        setTimeout(() => { movePlayer(state.pos - currentPosition); }, 1500);
+      }
+      
+      if(timeLeft <= 0) triggerGameOver();
+      else if(board[currentPosition].type === 'ゴール') {
+        log(`<strong>【ゴール】クリアおめでとうございます！！</strong>`);
+        stopTimer();
+      }
     }, 500);
   }
 
-  // --- 3. 各マスのイベント処理 ---
-  function handleEvent(space) {
-    const type = space.type;
-    
+  // --- イベント計算ロジック（プレイ・一括表示 共通） ---
+  function handleEventLogic(type, state, isSim) {
+    let logs = [];
     if(type === 'スタート' || type === '通常') {
-      log("何事もなく無事に通過。");
+      logs.push("何事もなく無事に通過。");
     }
     else if(type === '指示1') {
-      // 3-1: サイコロを5回振って、出目の合計×60秒とする。
-      let sum = 0;
-      let rollsText = [];
-      for(let i=0; i<5; i++) {
-        let r = rollDice1to6();
-        sum += r;
-        rollsText.push(r);
-      }
-      let penaltyTime = sum * 60;
-      addTime(-penaltyTime);
-      log(`【指示1】サイコロを5回振った！(出目: ${rollsText.join(', ')})<br>
-           合計【${sum}】× 60秒 ＝ <strong>${penaltyTime}秒（${sum}分）</strong> 消費。`);
+      let sum = 0, rolls = [];
+      for(let i=0; i<5; i++) { let r=rollDice1to6(); sum+=r; rolls.push(r); }
+      let pen = sum * 60;
+      state.time -= pen;
+      logs.push(`【指示1】サイコロ5回(${rolls.join(',')}) 合計${sum} × 60秒 ＝ <strong>${pen}秒</strong> 消費。`);
     }
     else if(type === '指示2') {
-      // 3-2: 3分間とする（休憩を選ぶと残り時間-20分）
-      setTimeout(() => {
-        let confirmRest = confirm("【指示2】\n3分間休憩するか、3分間くすぐられるか選べます。\n休憩を選んだ場合は、残り時間をさらに20分減らします。\n\n休憩を選びますか？\n[OK] 休憩する（残り時間-20分＆3分消費）\n[キャンセル] くすぐられる（3分消費）");
-        
-        if(confirmRest) {
-          addTime(-(20 * 60)); // 20分マイナス
-          addTime(-(3 * 60));  // 3分消費
-          log(`【指示2】休憩を選んだ。ペナルティ20分と休憩3分で、合計<strong>23分</strong>消費。`);
-        } else {
-          addTime(-(3 * 60));  // 3分消費
-          log(`【指示2】くすぐられるのを選んだ。<strong>3分</strong>消費。`);
-        }
-      }, 100);
+      let chooseRest = false;
+      if(isSim) { chooseRest = Math.random() < 0.5; }
+      else { chooseRest = confirm("【指示2】\n3分間休憩するか、3分間くすぐられるか選べます。\n休憩を選んだ場合は、残り時間をさらに20分減らします。\n\n[OK] 休憩する（残り時間-20分＆3分消費）\n[キャンセル] くすぐられる（3分消費）"); }
+
+      if(chooseRest) {
+        state.time -= (23 * 60);
+        logs.push(`【指示2】休憩を選んだ。ペナルティ20分と休憩3分で、合計<strong>23分</strong> 消費。`);
+      } else {
+        state.time -= (3 * 60);
+        logs.push(`【指示2】くすぐられるのを選んだ。<strong>3分</strong> 消費。`);
+      }
     }
     else if(type === '指示3') {
-      // 3-3: 1,6なら5分使う、2,3,4,5なら150秒使って6マス戻る
       let r = rollDice1to6();
       if(r === 1 || r === 6) {
-        addTime(-(5 * 60)); // 5分 = 300秒
-        log(`【指示3】出目は【${r}】。休憩を引き当てた！<strong>5分</strong>消費。`);
+        state.time -= (5 * 60);
+        logs.push(`【指示3】出目【${r}】。休憩を引き当てた！<strong>5分</strong> 消費。`);
       } else {
-        addTime(-150);
-        log(`【指示3】出目は【${r}】。指示されたポーズでくすぐられる！<strong>150秒</strong>消費し、<strong>6マス戻る</strong>！`);
-        // 戻ったマスの指示に従う
-        setTimeout(() => {
-          movePlayer(-6);
-        }, 1500);
+        state.time -= 150;
+        logs.push(`【指示3】出目【${r}】。指示されたポーズでくすぐられる！<strong>150秒</strong> 消費し、<strong>6マス戻る</strong>！`);
+        state.pos -= 6;
+        if(state.pos < 0) state.pos = 0;
+        state.needReEval = true; 
       }
     }
     else if(type === '指示4') {
-      // 3-4: 出目×60秒を2回分とする
       let r = rollDice1to6();
-      let penaltyTime = (r * 60) * 2;
-      addTime(-penaltyTime);
-      log(`【指示4】出目は【${r}】。声出し＆動作禁止でくすぐられる！<br>
-           出目×60秒×2回分 ＝ <strong>${penaltyTime}秒（${penaltyTime/60}分）</strong> 消費。`);
+      let pen = (r * 60) * 2;
+      state.time -= pen;
+      logs.push(`【指示4】出目【${r}】。声出し＆動作禁止！ 出目×60秒×2回分 ＝ <strong>${pen}秒（${pen/60}分）</strong> 消費。`);
     }
     else if(type === '指示5') {
-      // 3-5: 出目×10分間を2回分とする
       let r = rollDice1to6();
-      let penaltyTime = (r * 10 * 60) * 2; // (出目 * 10分 * 60秒) * 2回
-      addTime(-penaltyTime);
-      log(`【指示5】出目は【${r}】。自由に拘束され、声出し禁止でくすぐられる！<br>
-           出目×10分×2回分 ＝ <strong>${penaltyTime}秒（${penaltyTime/60}分）</strong> 消費。`);
+      let pen = (r * 10 * 60) * 2;
+      state.time -= pen;
+      logs.push(`【指示5】出目【${r}】。拘束＆声出し禁止！ 出目×10分×2回分 ＝ <strong>${pen}秒（${pen/60}分）</strong> 消費。`);
     }
     else if(type === '∞') {
-      // 4. 制限時間までくすぐられる
-      log(`<strong>【∞マス】制限時間までくすぐられる！タイマーが0になります。</strong>`);
-      triggerGameOver();
+      logs.push(`<strong>【∞マス】制限時間までくすぐられる！タイマーが0になります。</strong>`);
+      state.time = 0;
     }
-    else if(type === 'ゴール') {
-      log(`<strong>【ゴール】クリアおめでとうございます！！</strong>`);
-      stopTimer();
+    return logs;
+  }
+
+  // --- 3. 一括結果表示（シミュレーション） ---
+  function runSimulation() {
+    let state = { time: 3600, pos: 0, needReEval: false };
+    let out = "--- シミュレーション開始 ---\n初期制限時間: 60分00秒\n\n";
+    let turn = 1;
+
+    // strip tags function for plain text output
+    const strip = (html) => html.replace(/<[^>]*>?/gm, '');
+
+    while(state.time > 0 && state.pos < boardSize) {
+      state.needReEval = false;
+      let d = rollDice1to6();
+      state.pos += d;
+      if(state.pos > boardSize) state.pos = boardSize;
+
+      out += `[ターン${turn}] 🎲出目:${d} -> 【${state.pos}マス目】へ移動\n`;
+      let logs = handleEventLogic(board[state.pos].type, state, true);
+      out += logs.map(l => "  " + strip(l)).join("\n") + "\n";
+
+      // 指示3などで戻った場合の再処理
+      while(state.needReEval && state.time > 0) {
+        state.needReEval = false;
+        out += `  -> 戻った先【${state.pos}マス目】のイベント発動\n`;
+        let logs2 = handleEventLogic(board[state.pos].type, state, true);
+        out += logs2.map(l => "    " + strip(l)).join("\n") + "\n";
+      }
+
+      let m = Math.max(0, Math.floor(state.time / 60));
+      let s = Math.max(0, state.time % 60);
+      out += `  (残り時間: ${m}分${s}秒)\n\n`;
+
+      if(board[state.pos].type === 'ゴール' || board[state.pos].type === '∞') break;
+      turn++;
     }
+
+    if(state.time <= 0) {
+      out += "=============================\n【ゲームオーバー】制限時間オーバー\n=============================\n";
+    } else {
+      out += "=============================\n【クリア】制限時間内にゴール到達！\n=============================\n";
+    }
+    document.getElementById('simOutput').value = out;
   }
 </script>
 </body>
