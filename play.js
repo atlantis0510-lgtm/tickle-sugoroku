@@ -1,9 +1,6 @@
-// --- プレイタブ用状態管理 ---
 let mainTimeLeft = 3600;
 let mainTimerInterval = null;
 let isMainRunning = false;
-
-// gameState: 'IDLE' (移動待機), 'EVENT_WAIT' (指示マスでの入力待機), 'SUB_TIMER' (くすぐりタイマー作動中)
 let gameState = 'IDLE'; 
 let currentEvent = {}; 
 let subTimeLeft = 0;
@@ -23,7 +20,6 @@ function resetPlayGame() {
   renderActionPanel();
 }
 
-// --- メインタイマー (全体制限時間) ---
 function startMainTimer() {
   if(isMainRunning || mainTimeLeft <= 0) return;
   isMainRunning = true;
@@ -64,7 +60,6 @@ function log(message) {
   logArea.prepend(item);
 }
 
-// --- ゲーム進行 (手動) ---
 function rollMoveDice() {
   if(mainTimeLeft <= 0) { alert("時間切れです！"); return; }
   if(!isMainRunning) { alert("メインタイマーをスタートしてください！"); return; }
@@ -79,42 +74,83 @@ function movePlayer(steps) {
   if(currentPosition < 0) currentPosition = 0;
   if(currentPosition > boardSize) currentPosition = boardSize;
   renderBoard();
-  
   setTimeout(() => { processSpace(currentPosition); }, 500);
 }
 
-// マスに止まった時の処理（手動対応）
+// --- マス判定 ---
 function processSpace(pos) {
-  let type = board[pos].type;
+  let space = board[pos];
+  let type = space.type;
+  let val = space.value;
+  let text = space.text;
   
-  if (['通常', '赤', '青', '紫', '赤塗', 'スタート', ''].includes(type)) {
-    log(`【${type}】マス。特に指示はありません。`);
+  if (type === '通常' || type === 'スタート' || type === '') {
+    log(`【${type}】 ${text}`);
     gameState = 'IDLE';
   }
-  else if (type === '指示1') {
-    gameState = 'EVENT_WAIT';
-    currentEvent = { type: '指示1', rollsLeft: 5, sum: 0 };
-    log("【指示1】サイコロを5回振り、出目の合計×60秒くすぐられます。");
+  else if (type === '赤') {
+    if (val === '∞') {
+      log(`【赤マス】 ${text}（ゲームオーバー）`);
+      triggerGameOver();
+    } else {
+      let sec = parseInt(val) || 0;
+      log(`【赤マス】 ${text}`);
+      startSubTimer(sec, `${sec}秒間くすぐりタイム`);
+    }
   }
-  else if (type === '指示2') {
-    gameState = 'EVENT_WAIT';
-    currentEvent = { type: '指示2' };
-    log("【指示2】3分休憩(全体時間-20分)か、3分くすぐられるか選んでください。");
+  else if (type === '青') {
+    let sec = parseInt(val) || 0;
+    log(`【青マス】 ${text}`);
+    startSubTimer(sec, `${sec}秒間休憩`);
   }
-  else if (type === '指示3') {
-    gameState = 'EVENT_WAIT';
-    currentEvent = { type: '指示3' };
-    log("【指示3】サイコロを1回振ります。1か6なら5分休憩、それ以外なら150秒くすぐられた後6マス戻ります。");
+  else if (type === '紫') {
+    let steps = parseInt(val) || 0;
+    log(`【紫マス】 ${text}`);
+    // サブタイマーを使わずに直接戻す処理を入れる（演出のために少し待つ）
+    gameState = 'EVENT_WAIT'; // 戻るまでボタンを押せないようにする
+    currentEvent = { type: '紫', steps: steps };
+    renderActionPanel();
+    setTimeout(() => {
+      log(`${steps}マス戻ります。`);
+      movePlayer(-steps);
+    }, 2000); // 2秒後に戻る
   }
-  else if (type === '指示4') {
+  else if (type === '赤塗') {
     gameState = 'EVENT_WAIT';
-    currentEvent = { type: '指示4' };
-    log("【指示4】サイコロを振ります。(出目×120秒)くすぐられます。");
+    currentEvent = { type: '赤塗', text: text };
+    log(`【赤塗マス】 ${text}。サイコロを振ってください。`);
   }
-  else if (type === '指示5') {
-    gameState = 'EVENT_WAIT';
-    currentEvent = { type: '指示5' };
-    log("【指示5】サイコロを振ります。(出目×20分)くすぐられます。");
+  else if (type === '指示') {
+    // textの内容でどの指示か判定する
+    if (text.includes("サイコロを５回振り")) {
+      gameState = 'EVENT_WAIT';
+      currentEvent = { type: '指示1', rollsLeft: 5, sum: 0 };
+      log(`【指示マス】 ${text}`);
+    }
+    else if (text.includes("休憩するか、3分間くすぐられるか選べる")) {
+      gameState = 'EVENT_WAIT';
+      currentEvent = { type: '指示2' };
+      log(`【指示マス】 ${text}`);
+    }
+    else if (text.includes("出目１,6：5分間休憩")) {
+      gameState = 'EVENT_WAIT';
+      currentEvent = { type: '指示3' };
+      log(`【指示マス】 ${text}`);
+    }
+    else if (text.includes("動いたり声を出してはいけない")) {
+      gameState = 'EVENT_WAIT';
+      currentEvent = { type: '指示4' };
+      log(`【指示マス】 ${text}`);
+    }
+    else if (text.includes("自由に拘束され")) {
+      gameState = 'EVENT_WAIT';
+      currentEvent = { type: '指示5' };
+      log(`【指示マス】 ${text}`);
+    }
+    else {
+      log(`【指示マス】 ${text}（※自動処理未対応の指示です）`);
+      gameState = 'IDLE';
+    }
   }
   else if (type === 'ゴール') {
     log(`<strong>🎉【ゴール】クリアおめでとうございます！！</strong>`);
@@ -124,9 +160,14 @@ function processSpace(pos) {
   renderActionPanel();
 }
 
-// --- 手動イベントの各種ボタンアクション ---
 function handleEventAction(actionType, value) {
-  if (currentEvent.type === '指示1') {
+  if (currentEvent.type === '赤塗') {
+    let d = rollDice1to6();
+    let sec = d * 60;
+    log(`🎲 出目【${d}】。${sec}秒間くすぐられます。`);
+    startSubTimer(sec, "赤塗: くすぐりタイム");
+  }
+  else if (currentEvent.type === '指示1') {
     let d = rollDice1to6();
     currentEvent.sum += d;
     currentEvent.rollsLeft--;
@@ -140,7 +181,7 @@ function handleEventAction(actionType, value) {
   else if (currentEvent.type === '指示2') {
     if (value === 'rest') {
       log("指示2: 休憩を選択。全体時間から20分引かれ、3分間の休憩に入ります。");
-      addMainTime(-1200); // 20分マイナス
+      addMainTime(-1200);
       startSubTimer(180, "休憩タイム (くすぐりなし)");
     } else {
       log("指示2: くすぐりを選択。3分間くすぐられます。");
@@ -163,20 +204,19 @@ function handleEventAction(actionType, value) {
   }
   else if (currentEvent.type === '指示4') {
     let d = rollDice1to6();
-    let sec = d * 120;
+    let sec = d * 60; // 変更: CSVの「出目×60秒」に合わせました
     log(`指示4: 🎲 出目【${d}】。声出し＆動作禁止で ${sec}秒くすぐられます。`);
     startSubTimer(sec, "拘束くすぐりタイム");
   }
   else if (currentEvent.type === '指示5') {
     let d = rollDice1to6();
-    let sec = d * 1200; // 20分
+    let sec = d * 600; // 変更: CSVの「出目×10分」に合わせました
     log(`指示5: 🎲 出目【${d}】。拘束＆声出し禁止で ${sec}秒くすぐられます。`);
     startSubTimer(sec, "厳重拘束くすぐりタイム");
   }
   renderActionPanel();
 }
 
-// --- サブタイマー処理 (制限時間とは別に動くタイマー) ---
 function startSubTimer(seconds, message, onComplete = null) {
   gameState = 'SUB_TIMER';
   subTimeLeft = seconds;
@@ -186,10 +226,8 @@ function startSubTimer(seconds, message, onComplete = null) {
   clearInterval(subTimerInterval);
   subTimerInterval = setInterval(() => {
     subTimeLeft--;
-    renderActionPanel(); // 毎秒UI更新
-    if (subTimeLeft <= 0) {
-      finishSubTimer();
-    }
+    renderActionPanel();
+    if (subTimeLeft <= 0) finishSubTimer();
   }, 1000);
   renderActionPanel();
 }
@@ -204,7 +242,7 @@ function finishSubTimer() {
   gameState = 'IDLE';
   if (currentEvent.onComplete) {
     let cb = currentEvent.onComplete;
-    currentEvent = {}; // リセット
+    currentEvent = {}; 
     cb();
   } else {
     currentEvent = {};
@@ -216,7 +254,6 @@ function clearSubTimer() {
   subTimeLeft = 0;
 }
 
-// --- アクションパネルの描画 ---
 function renderActionPanel() {
   const panel = document.getElementById('actionPanel');
   panel.innerHTML = '';
@@ -225,7 +262,16 @@ function renderActionPanel() {
     panel.innerHTML = `<button class="dice-btn" onclick="rollMoveDice()">🎲 サイコロを振って進む</button>`;
   } 
   else if (gameState === 'EVENT_WAIT') {
-    if (currentEvent.type === '指示1') {
+    if (currentEvent.type === '紫') {
+       panel.innerHTML = `<p><strong>紫マス処理中...</strong></p>`;
+    }
+    else if (currentEvent.type === '赤塗') {
+      panel.innerHTML = `
+        <p><strong>赤塗マス</strong>: 出目×60秒くすぐられます</p>
+        <button class="action-btn" onclick="handleEventAction()">🎲 サイコロを振る</button>
+      `;
+    }
+    else if (currentEvent.type === '指示1') {
       panel.innerHTML = `
         <p><strong>指示1進行中</strong> (残り ${currentEvent.rollsLeft} 回)</p>
         <button class="action-btn" onclick="handleEventAction()">🎲 サイコロを振る</button>
@@ -238,7 +284,7 @@ function renderActionPanel() {
       `;
     } else if (['指示3', '指示4', '指示5'].includes(currentEvent.type)) {
       panel.innerHTML = `
-        <p><strong>${currentEvent.type}</strong></p>
+        <p><strong>指示判定</strong></p>
         <button class="action-btn" onclick="handleEventAction()">🎲 判定用サイコロを振る</button>
       `;
     }
