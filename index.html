@@ -18,13 +18,6 @@
     制限時間内にゴールできない、または途中でギブアップするなどした場合は罰ゲームとして、<strong>相手の気が済むまでくすぐり続けられます。</strong>
   </div>
 
-  <!-- CSV読み込みエリア -->
-  <div class="csv-upload-section">
-    <label for="csvFileInput" class="csv-btn">CSVファイルを手動で読み込む</label>
-    <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
-    <span id="fileNameDisplay">masu.csv を確認中...</span>
-  </div>
-
   <!-- タブボタン -->
   <div class="tab-buttons">
     <button class="active" onclick="switchTab('tab-play', this)">プレイ</button>
@@ -44,7 +37,7 @@
       </div>
     </div>
 
-    <!-- アクションパネル (サイコロやイベントのボタンがここに表示されます) -->
+    <!-- アクションパネル -->
     <div id="actionPanel" class="action-panel"></div>
 
     <div class="board-container">
