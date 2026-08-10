@@ -77,7 +77,6 @@ function movePlayer(steps) {
   setTimeout(() => { processSpace(currentPosition); }, 500);
 }
 
-// --- マス判定 ---
 function processSpace(pos) {
   let space = board[pos];
   let type = space.type;
@@ -106,51 +105,37 @@ function processSpace(pos) {
   else if (type === '紫') {
     let steps = parseInt(val) || 0;
     log(`【紫マス】 ${text}`);
-    // サブタイマーを使わずに直接戻す処理を入れる（演出のために少し待つ）
-    gameState = 'EVENT_WAIT'; // 戻るまでボタンを押せないようにする
+    gameState = 'EVENT_WAIT';
     currentEvent = { type: '紫', steps: steps };
     renderActionPanel();
     setTimeout(() => {
       log(`${steps}マス戻ります。`);
       movePlayer(-steps);
-    }, 2000); // 2秒後に戻る
+    }, 2000);
   }
   else if (type === '赤塗') {
     gameState = 'EVENT_WAIT';
     currentEvent = { type: '赤塗', text: text };
     log(`【赤塗マス】 ${text}。サイコロを振ってください。`);
   }
-  else if (type === '指示') {
-    // textの内容でどの指示か判定する
-    if (text.includes("サイコロを５回振り")) {
-      gameState = 'EVENT_WAIT';
+  else if (type.startsWith('指示')) {
+    // textの内容ではなく、マスの種類（指示1〜5）で直接判定する
+    gameState = 'EVENT_WAIT';
+    if (type === '指示1') {
       currentEvent = { type: '指示1', rollsLeft: 5, sum: 0 };
-      log(`【指示マス】 ${text}`);
-    }
-    else if (text.includes("休憩するか、3分間くすぐられるか選べる")) {
-      gameState = 'EVENT_WAIT';
+    } else if (type === '指示2') {
       currentEvent = { type: '指示2' };
-      log(`【指示マス】 ${text}`);
-    }
-    else if (text.includes("出目１,6：5分間休憩")) {
-      gameState = 'EVENT_WAIT';
+    } else if (type === '指示3') {
       currentEvent = { type: '指示3' };
-      log(`【指示マス】 ${text}`);
-    }
-    else if (text.includes("動いたり声を出してはいけない")) {
-      gameState = 'EVENT_WAIT';
+    } else if (type === '指示4') {
       currentEvent = { type: '指示4' };
-      log(`【指示マス】 ${text}`);
-    }
-    else if (text.includes("自由に拘束され")) {
-      gameState = 'EVENT_WAIT';
+    } else if (type === '指示5') {
       currentEvent = { type: '指示5' };
-      log(`【指示マス】 ${text}`);
+    } else {
+      // 想定外の指示が入っていた場合の保険
+      currentEvent = { type: '指示1', rollsLeft: 5, sum: 0 }; 
     }
-    else {
-      log(`【指示マス】 ${text}（※自動処理未対応の指示です）`);
-      gameState = 'IDLE';
-    }
+    log(`【${type}】 ${text}`);
   }
   else if (type === 'ゴール') {
     log(`<strong>🎉【ゴール】クリアおめでとうございます！！</strong>`);
@@ -204,13 +189,13 @@ function handleEventAction(actionType, value) {
   }
   else if (currentEvent.type === '指示4') {
     let d = rollDice1to6();
-    let sec = d * 60; // 変更: CSVの「出目×60秒」に合わせました
+    let sec = d * 60;
     log(`指示4: 🎲 出目【${d}】。声出し＆動作禁止で ${sec}秒くすぐられます。`);
     startSubTimer(sec, "拘束くすぐりタイム");
   }
   else if (currentEvent.type === '指示5') {
     let d = rollDice1to6();
-    let sec = d * 600; // 変更: CSVの「出目×10分」に合わせました
+    let sec = d * 600;
     log(`指示5: 🎲 出目【${d}】。拘束＆声出し禁止で ${sec}秒くすぐられます。`);
     startSubTimer(sec, "厳重拘束くすぐりタイム");
   }

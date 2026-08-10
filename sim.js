@@ -63,13 +63,14 @@ function simHandleEvent(space, time, pos) {
       logs.push(`  【赤マス】 ${text} -> ゲームオーバー`);
     } else {
       let sec = parseInt(val) || 0;
-      // シミュレーションではサブタイマーの分、メインタイマー（現実の時間）は進まないものとする
+      res.newTime -= sec;
       logs.push(`  【赤マス】 ${text}（${sec}秒消費）`);
     }
   }
   else if (type === '青') {
     let sec = parseInt(val) || 0;
-    logs.push(`  【青マス】 ${text}（${sec}秒休憩）`);
+    res.newTime -= sec;
+    logs.push(`  【青マス】 ${text}（${sec}秒休憩・消費）`);
   }
   else if (type === '紫') {
     let steps = parseInt(val) || 0;
@@ -80,45 +81,52 @@ function simHandleEvent(space, time, pos) {
   else if (type === '赤塗') {
     let d = rollDice1to6();
     let sec = d * 60;
+    res.newTime -= sec;
     logs.push(`  【赤塗マス】 ${text} -> 🎲出目:${d} (${sec}秒消費)`);
   }
-  else if (type === '指示') {
-    if (text.includes("サイコロを５回振り")) {
+  else if (type.startsWith('指示')) {
+    if (type === '指示1') {
       let sum = 0; for(let i=0; i<5; i++) sum += rollDice1to6();
       let sec = sum * 60;
-      logs.push(`  【指示マス(1)】 サイコロ5回合計:${sum} -> ${sec}秒消費`);
+      res.newTime -= sec;
+      logs.push(`  【${type}】 ${text} -> サイコロ5回合計:${sum} (${sec}秒消費)`);
     }
-    else if (text.includes("休憩するか、3分間くすぐられるか選べる")) {
+    else if (type === '指示2') {
       let chooseRest = Math.random() < 0.5;
       if(chooseRest) {
-        res.newTime -= (20 * 60); // 全体時間から20分引かれる
-        logs.push(`  【指示マス(2)】 休憩を選択（全体時間-20分）`);
+        res.newTime -= (23 * 60); // ペナルティ20分 + 3分
+        logs.push(`  【${type}】 ${text} -> 休憩を選択（ペナルティ20分＋3分＝23分消費）`);
       } else {
-        logs.push(`  【指示マス(2)】 くすぐりを選択（3分消費）`);
+        res.newTime -= (3 * 60);
+        logs.push(`  【${type}】 ${text} -> くすぐりを選択（3分消費）`);
       }
     }
-    else if (text.includes("出目１,6：5分間休憩")) {
+    else if (type === '指示3') {
       let d = rollDice1to6();
       if(d === 1 || d === 6) {
-        logs.push(`  【指示マス(3)】 🎲出目:${d} -> 5分間休憩`);
+        res.newTime -= 300;
+        logs.push(`  【${type}】 ${text} -> 🎲出目:${d} (5分間休憩・300秒消費)`);
       } else {
-        logs.push(`  【指示マス(3)】 🎲出目:${d} -> 150秒消費し、6マス戻る`);
+        res.newTime -= 150;
+        logs.push(`  【${type}】 ${text} -> 🎲出目:${d} (150秒消費し、6マス戻る)`);
         res.newPos = Math.max(0, pos - 6);
         res.needReEval = true;
       }
     }
-    else if (text.includes("動いたり声を出してはいけない")) {
+    else if (type === '指示4') {
       let d = rollDice1to6();
       let sec = d * 60;
-      logs.push(`  【指示マス(4)】 🎲出目:${d} -> ${sec}秒消費`);
+      res.newTime -= sec;
+      logs.push(`  【${type}】 ${text} -> 🎲出目:${d} (${sec}秒消費)`);
     }
-    else if (text.includes("自由に拘束され")) {
+    else if (type === '指示5') {
       let d = rollDice1to6();
-      let sec = d * 600; // 10分
-      logs.push(`  【指示マス(5)】 🎲出目:${d} -> ${sec/60}分消費`);
+      let sec = d * 600;
+      res.newTime -= sec;
+      logs.push(`  【${type}】 ${text} -> 🎲出目:${d} (${sec/60}分消費)`);
     }
     else {
-      logs.push(`  【指示マス】 ${text}`);
+      logs.push(`  【${type}】 ${text}`);
     }
   }
   else if (type === 'ゴール') {
